@@ -31,21 +31,34 @@ bool isNumber(const string& number) {
 	return true;
 }
 
+enum Errors {
+	NotExists,
+	WrongToken,
+	WrongExpression
+};
+
 std::tuple<double, bool> Calculate(string& filename) {
 	std::ifstream input(filename);
 	
 	if (input.fail()) {
-		return {0, true};
+		return { Errors::NotExists, true };
 	}
 
 	std::stack<double> values;
 	string line;
 	
-	int i = 0;
 	while (input >> line) {
 		if (isNumber(line)) {
 			values.push(stod(line));
 			continue;
+		}
+
+		if (line.length() > 1) {
+			return { Errors::WrongToken, true };
+		}
+
+		if (values.size() < 2) {
+			return { Errors::WrongExpression, true };
 		}
 
 		double operand_1 = values.top();
@@ -62,6 +75,7 @@ std::tuple<double, bool> Calculate(string& filename) {
 
 			case '-':
 				result = operand_1 - operand_2;
+				break;
 			
 			case '*':
 				result = operand_1 * operand_2;
@@ -69,18 +83,21 @@ std::tuple<double, bool> Calculate(string& filename) {
 
 			case '/':
 				result = operand_1 / operand_2;
+				break;
 			
 			default:
-				result = 0;
+				return { Errors::WrongToken, true };
 				break;
 		}
 
 		values.push(result);
 	}
 
-	double final = values.top();
-
-	return {final, false};
+	if (values.size() > 1) {
+		return { Errors::WrongExpression, true };
+	}
+	
+	return {values.top(), false};
 }
 
 int main(int number, const char* args[]) {
@@ -96,7 +113,20 @@ int main(int number, const char* args[]) {
 		auto[result, error] = Calculate(command);
 
 		if (error) {
-			cout << "The specified file does not exists!" << endl;
+			switch (static_cast<int>(result)) {
+				case Errors::NotExists:
+					std::cerr << "The specified file does not exists!" << endl;
+					break;
+
+				case Errors::WrongToken:
+					std::cerr << "There is a wrong line at the specified file" << endl;
+					break;
+
+				case Errors::WrongExpression:
+					std::cerr << "The expression does not evaluate to a final result" << endl;
+					break;
+			}
+			
 			return 1;
 		}
 
