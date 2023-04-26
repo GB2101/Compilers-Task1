@@ -49,7 +49,7 @@ struct Token {
 
 bool isNumber(const string& number) {
 	for (char ch: number) {
-		if (std::isdigit(ch) == 0) {
+		if (std::isdigit(ch) == 0 && ch != '.') {
 			return false;
 		}
 	}
