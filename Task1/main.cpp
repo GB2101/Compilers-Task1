@@ -61,10 +61,10 @@ std::tuple<double, bool> Calculate(string& filename) {
 			return { Errors::WrongExpression, true };
 		}
 
-		double operand_1 = values.top();
+		double operand_2 = values.top();
 		values.pop();
 
-		double operand_2 = values.top();
+		double operand_1 = values.top();
 		values.pop();
 
 		double result;
